@@ -1,0 +1,18 @@
+---
+
+- name: Add user to all hosts
+  hosts: all
+  become: yes
+  vars:
+    USERNAME: anonymous
+    COMMENT: This user is temporary
+  tasks:
+  user: 
+   - name: "{{USERNAME}}"
+     comment: "{{COMMENT}}"
+     register: PRINTUSERNAME 
+   - debug:
+       var: PRINTUSERNAME.name
+   - debug:
+       var: PRINTUSERNAME.comment
+       

@@ -1,0 +1,29 @@
+- name: Use of loop in this file to install packages
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install packages with loop on centos
+      yum:
+         name: "{{item}}"
+         state: present
+      when: ansible_distribution==CentOS
+      loop:
+       - ntp
+       - git
+       - httpd
+       - mariadb
+       - zip
+       - unzip
+    - name: Install packages with loop on Ubuntu
+      yum:
+         name: "{{item}}"
+         state: present
+         update_cache: yes
+      when: ansible_distribution==Ubuntu
+      loop:
+       - ntp
+       - git
+       - httpd
+       - mariadb
+       - zip
+       - unzip

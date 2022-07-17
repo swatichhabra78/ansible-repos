@@ -1,0 +1,20 @@
+- name: Create group and add user in group created
+  become: yes
+  hosts: all
+  tasks:
+     - name: Add group 
+       group:
+         name: Devops
+         state: present
+     - name: Add user
+       user:
+         name: "{{item}}"
+         state: present
+         group: devops
+       loop:
+        - swati
+        - juhi
+        - ishan
+        - mallik
+        - vanshu
+        - sanvi

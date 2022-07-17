@@ -1,0 +1,24 @@
+- name: Play1
+  hosts: target1
+  become: yes
+  vars:
+    dbname: accounts
+  tasks:
+    - name: Install mysql
+      yum:
+         name: mariadb-server
+         state: present
+    - name: Start mysql service
+      service:
+         name: mariadb
+         state: started
+         enabled: yes
+    - name: Install python
+      yum:
+         name: MySQL-python
+         state: present
+    - name:
+      mysql_db: "{{dbname}}"
+         name: admin
+
+         state: present

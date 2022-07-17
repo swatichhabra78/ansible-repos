@@ -1,0 +1,94 @@
+
+- name: Sample small project on ansible
+  hosts: target2
+  become: yes
+  vars:
+    mysql_root_passowrd: ecompassword
+  tasks:
+     - name: Install Firewalld
+       yum:
+         name: Firewalld
+         state: present 
+     - name: Start and enable Firewalld service
+       service: 
+         name: Firewalld
+         state: started
+         enabled: yes
+     - name: Install Mariadb
+       yum: 
+         name: Mariadb
+         state: present
+     - name: Start and enable Mariadb service
+       service:
+         name: Mariadb
+         state: started
+         enabled: yes
+     - name: Firewalld rules
+       Firewalld:
+         permanent: yes
+         immediate: yes
+         port: "{{item.port}}/{{item.proto}}"
+         state: "{{item.state}}"
+         zone: "{{item.zone}}"
+       with_items:
+       - {port: "3306", proto: "tcp", state: "enabled", zone: "public" }
+   
+     - name: Create user for db  
+       mysql_user:  
+         name: ecomuser 
+         host: localhost
+         password: "{{ mysql_root_passowrd }}"  
+         login_user: ecomuser 
+         login_password: "{{ mysql_root_passowrd }}"  
+         check_implicit_admin: yes  
+         priv: "*.*:ALL,GRANT"            
+
+     - name: create a new database  
+       mysql_db: name=ecomdb state=present login_user=ecomuser login_password="{{ mysql_root_password }}" 
+     - name: add sample data to database  
+       copy: src=db-load-script.sql dest=/tmp/db-load-script.sql
+     - name: insert sample data into database  
+       mysql_db: name=ecomdb state=import target=/tmp/db-load-script.sql login_user=root login_password="{{ mysql_root_password }}"
+
+     - name: Install httpd php and php-mysql
+       yum: 
+         name:
+           - httpd
+           - php 
+           - php-mysql
+         state: present
+     - name: Firewalld rules
+       Firewalld:
+         permanent: yes
+         immediate: yes
+         port: "{{item.port}}/{{item.proto}}"
+         state: "{{item.state}}"
+         zone: "{{item.zone}}"
+       with_items:
+         - {port: "80", proto: "tcp", state: "enabled", zone: "public" }
+     - name: Replace default DocumentRoot in httpd.conf
+       replace:
+         path: /etc/httpd/conf/httpd.conf
+         regexp: "DirectoryIndex index.html"
+         replace: "DiretoryIndex index.php" 
+     -  name: Start and enable service httpd
+        service:
+          name: httpd
+          state: started
+          enabled: yes
+     -  name: Install git
+        yum: 
+          name: git
+          present: yes
+     -  name: Clone a github repository
+        git:
+          repo: https://github.com/kodekloud/learning-app-ecommerce.git
+          dest: /var/www/html
+          clone: yes
+          update: yes
+     -  name: Update ip address in inex.html to localhost
+        replace: 
+          path: /var/www/html/index.php
+          regexp: '172.20.1.101'
+          replace: localhost
+     

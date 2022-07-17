@@ -1,0 +1,39 @@
+- name: Add content to banner file 
+  hosts: all
+  become: true
+  tasks: 
+     - name: Copy file to remote linux system at location /etc/motd
+       copy: 
+          content: "This file is to test coly command and add content to banner file. \n"  
+          dest: /etc/motd
+     - name: Use of template module (Template module read the file and see if there is any dynamic content then replace it with the actual content and then push it to other location)
+       template: 
+          src: template/ntp_redhat.conf.j2
+          dest: /etc/ntp.conf 
+       # overwrite the ntp.conf file with ntp_redhat.conf.j2 file using jinja2 templating
+          when: ansible_os_family == "RedHat"
+     - name: Restart ntp service
+       service:
+          name: ntpd 
+          state: restared
+          enabled: yes
+          when: ansible_os_family == "RedHat" 
+     - name: Restart ntp service
+       service:
+          name: ntp
+          state: restared
+          enabled: yes
+          when: ansible_os_family == "Debian" 
+          # when we make change in config file we need to restart srvice
+
+     - name: Use of file module (it can create directory/file/links in remore servers---> file module is used to manage files and its properties)
+       file:
+          path: /opt/devdata
+          state: directory 
+          mode: 0775
+     - name: Use of file module to chage file ownership, group and permissions
+       file: 
+          path: /etc/file_name
+          owner: swati
+          group: swati
+          mode: '0644'

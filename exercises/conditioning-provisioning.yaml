@@ -1,0 +1,27 @@
+- name: Provisioning servers
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install ntpd
+      yum: 
+        name: ntpd 
+        state: present
+      when: ansible_distribution==CentOS
+    - name: Install NTP 
+      apt:
+        name: ntp
+        state: present
+      when: ansible_distribution==Ubuntu        
+    - name: Start and enable ntp service
+      service:
+        name: ntpd
+        state: started
+        enabled: yes
+      when: ansible_distribution_file_variety==RedHat
+    - name: Start and enable ntp service
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+      when: ansible_distribution_file_variety==Debian
+      
